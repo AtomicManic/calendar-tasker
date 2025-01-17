@@ -2,7 +2,8 @@ const { fetchPublicEvents } = require('../API/Google/Calendar/CalendarApi');
 
 const getTodayEvents = async (req, res) => {
     try {
-        const events = await fetchPublicEvents();
+        const { accessToken } = req.user;
+        const events = await fetchPublicEvents(accessToken);
         res.status(200).send(events);
     } catch (error) {
         console.error('Error fetching events:', error);

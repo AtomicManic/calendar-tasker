@@ -1,7 +1,6 @@
-const { decodeJWT, createToken } = require('../utils/jwt');
+const { decodeJWT, createToken } = require('../util/Auth');
 const { getUserByEmail } = require('../models/userModel');
-const { oauth2Client } = require('../API/Google/Auth/Auth');
-
+const { google } = require('googleapis');
 
 const authenticateJWT = async (req, res, next) => {
     const token = req.cookies.auth;
@@ -14,7 +13,7 @@ const authenticateJWT = async (req, res, next) => {
     try {
         decoded = decodeJWT(token);
         req.user = decoded;
-        next();
+        return next();
     } catch (error) {
         if (error.name !== 'TokenExpiredError') {
             // If it's not a token expiration error, respond with an error
@@ -30,6 +29,7 @@ const authenticateJWT = async (req, res, next) => {
         if (!user || !user.refreshToken) {
             return res.status(401).send('Access Denied: No valid refresh token found.');
         }
+        const oauth2Client = new google.auth.OAuth2();
         oauth2Client.setCredentials({ refresh_token: user.refreshToken });
         const { credentials } = await oauth2Client.refreshAccessToken();
         const newAccessToken = credentials.access_token;
@@ -38,9 +38,9 @@ const authenticateJWT = async (req, res, next) => {
         req.user = decodeJWT(newJwtToken);
         return next();
     } catch (error) {
-        console.error('Failed to refresh access token:', refreshError);
+        console.error('Failed to refresh access token:', error);
         return res.status(401).send('Access Denied: Refresh token invalid or expired.');
     }
 }
 
-module.exports = { authenticateJWT };
+module.exports = authenticateJWT;

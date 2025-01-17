@@ -11,7 +11,6 @@ const getUserByEmail = async (email) => {
     const user = await User.findOne({
         email
     });
-    console.log('User:', user);
     return user;
 };
 

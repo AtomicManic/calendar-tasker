@@ -1,19 +1,26 @@
 const { google } = require('googleapis');
 const { oauth2Client } = require('../API/Google/Auth/Auth');
-const jwt = require('jsonwebtoken');
 const { createUser, getUserById, updateUserById, deleteUserById, } = require('../models/userModel');
 const { verifyUser, createCookie, decodeJWT, createToken } = require('../util/Auth');
-const { create } = require('../schemas/userSchema');
+
+const SCOPES = [
+    'https://www.googleapis.com/auth/calendar.readonly',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/userinfo.email',
+];
 
 const authenticateUser = async (req, res) => {
     try {
         const authUrl = oauth2Client.generateAuthUrl({
-            access_type: 'offline', // Ensures refresh token is provided
-            scope: ['https://www.googleapis.com/auth/calendar.readonly', 'profile', 'email'], // Request Calendar API access
+            access_type: 'offline',
+            scope: SCOPES,
+            prompt: 'consent', // Force consent screen to ensure refresh token
+            include_granted_scopes: true // Enable incremental authorization
         });
         res.send(`<a href="${authUrl}">Authenticate with Google</a>`);
         console.log(`Visit this URL to authenticate: ${authUrl}`);
     } catch (error) {
+        console.error('Authentication URL generation failed:', error);
         res.status(500).send('Failed to authenticate!');
     }
 }
@@ -45,6 +52,8 @@ const authCallback = async (req, res) => {
         }
         // save access token to jwt
         const jwtToken = createToken({ email: data.email, accessToken: tokens.access_token });
+        console.log('accessToken:', tokens.access_token);
+        console.log('jwtToken:', jwtToken);
         createCookie(res, jwtToken);
 
         res.send('Authentication successful! You can close this tab.');

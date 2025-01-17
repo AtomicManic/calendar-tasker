@@ -37,7 +37,6 @@ const verifyUser = async (email) => {
     } catch (error) {
         res.status(500).send('Failed to verify user!');
     }
-
 }
 
 const decodeJWT = (token) => {
