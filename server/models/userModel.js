@@ -1,28 +1,48 @@
-const {Schema, Model} = require('mongoose');
+const User = require('../schemas/userSchema');
 
-const userSchema = new Schema({
-    username: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true
-    },
-    calendars: {
-        type: Array,
-        default: []
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
+const createUser = async (userData) => {
+    console.log('Creating user:', userData);
+    const user = new User(userData);
+    await user.save();
+    return user;
+};
+
+const getUserByEmail = async (email) => {
+    const user = await User.findOne({
+        email
+    });
+    console.log('User:', user);
+    return user;
+};
+
+const getUserById = async (userId) => {
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new Error('User not found');
     }
-});
+    return user;
+};
 
-const User = Model('User', userSchema);
+const updateUserById = async (userId, updateData) => {
+    const user = await User.findByIdAndUpdate(userId, updateData, { new: true });
+    if (!user) {
+        throw new Error('User not found');
+    }
+    return user;
+};
 
-module.exports = User;
+const deleteUserById = async (userId) => {
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) {
+        throw new Error('User not found');
+    }
+    return user;
+};
+
+module.exports = {
+    createUser,
+    getUserById,
+    getUserByEmail,
+    updateUserById,
+    deleteUserById,
+};
