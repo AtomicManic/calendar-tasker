@@ -1,17 +1,19 @@
-const { google } = require('googleapis');
+const initCalendarClient = require('./calendarClient');
 
-// Your API key (from Google Cloud Console)
-const API_KEY = process.env.GOOGLE_API_KEY;
+const fetchEventById = async (accessToken, eventId, calendarId) => {
+    const calendar = initCalendarClient(accessToken);
+    const response = await calendar.events.get({
+        calendarId: calendarId ? calendarId : 'primary',
+        eventId: eventId
+    });
+}
 
-// Function to fetch events from a public calendar
 const fetchPublicEvents = async (accessToken, timeRange, calendarId) => {
     try {
-        const oauth2Client = new google.auth.OAuth2();
-        oauth2Client.setCredentials({ access_token: accessToken });
-        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+        const calendar = initCalendarClient(accessToken);
 
         const timeConstraints = getTimeRange(timeRange);
-       
+
         const response = await calendar.events.list({
             calendarId: calendarId ? calendarId : 'primary', // For authenticated access, this would be the user's calendar
             timeMin: timeConstraints.timeMin,
@@ -19,7 +21,6 @@ const fetchPublicEvents = async (accessToken, timeRange, calendarId) => {
             maxResults: 10,
             singleEvents: true,
             orderBy: 'startTime',
-            key: API_KEY,
         });
 
         const events = response.data.items;
@@ -41,6 +42,20 @@ const fetchPublicEvents = async (accessToken, timeRange, calendarId) => {
     }
 }
 
+const getUserCalendars = async (accessToken) => {
+    try {
+        const calendar = initCalendarClient(accessToken);
+        const response = await calendar.calendarList.list();
+        const calendars = response.data.items;
+        return calendars;
+    } catch (error) {
+        console.error('Error fetching calendars:', error);
+        res.status(500).send('Error fetching calendars');
+    }
+}
+
+
+// Helper function to get time range for events
 const getTimeRange = (timeRange) => {
     const now = new Date();
     const timeMin = new Date();
@@ -78,18 +93,4 @@ const getTimeRange = (timeRange) => {
     };
 };
 
-const getUserCalendars = async (accessToken) => {
-    try {
-        const oauth2Client = new google.auth.OAuth2();
-        oauth2Client.setCredentials({ access_token: accessToken });
-        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-        const response = await calendar.calendarList.list();
-        const calendars = response.data.items;
-        return calendars;
-    } catch (error) {
-        console.error('Error fetching calendars:', error);
-        res.status(500).send('Error fetching calendars');
-    }
-}
-
-module.exports = { fetchPublicEvents, getUserCalendars };
+module.exports = { fetchPublicEvents, getUserCalendars, fetchEventById };

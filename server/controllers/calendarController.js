@@ -1,4 +1,4 @@
-const { fetchPublicEvents, getUserCalendars } = require('../API/Google/Calendar/CalendarApi');
+const { fetchPublicEvents, getUserCalendars, fetchEventById } = require('../API/Google/Calendar/calendarApi');
 const { google } = require('googleapis');
 
 const getEvents = async (req, res) => {
@@ -10,6 +10,19 @@ const getEvents = async (req, res) => {
     } catch (error) {
         console.error('Error fetching events:', error);
         res.status(500).send('Error fetching events');
+    }
+}
+
+const getEventById = async (req, res) => {
+    const { eventId, calendarId } = req.params;
+    try {
+        const { accessToken } = req.user;
+        const event = await fetchEventById(accessToken, eventId, calendarId);
+        res.status(200).send(event);
+    }
+    catch (error) {
+        console.error('Error fetching event:', error);
+        res.status(500).send('Error fetching event');
     }
 }
 
@@ -26,4 +39,4 @@ const getCalendars = async (req, res) => {
 
 
 
-module.exports = { getEvents, getCalendars };
+module.exports = { getEvents, getCalendars, getEventById };

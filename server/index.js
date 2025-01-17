@@ -3,8 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./db/dbConn');
-const AuthRouter = require('./routes/AuthRoute');
-const CalendarRouter = require('./routes/CalendarRoute');
+const AuthRouter = require('./routes/authRoute');
+const CalendarRouter = require('./routes/calendarRoute');
+const TaskRouter = require('./routes/taskRoute');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -18,6 +19,7 @@ connectDB();
 
 app.use('/auth', AuthRouter);
 app.use('/calendar', CalendarRouter);
+app.use('/task', TaskRouter);
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

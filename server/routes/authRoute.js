@@ -1,4 +1,4 @@
-const { authenticateUser, authCallback } = require('../controllers/AuthController');
+const { authenticateUser, authCallback } = require('../controllers/authController');
 const router = require('express').Router();
 
 router.get('/', authenticateUser);

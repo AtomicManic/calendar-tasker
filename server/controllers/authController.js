@@ -1,8 +1,8 @@
 const { google } = require('googleapis');
-const { oauth2Client } = require('../API/Google/Auth/Auth');
+const { oauth2Client } = require('../API/Google/Auth/auth');
 const { createUser } = require('../models/userModel');
 const { verifyUser, createCookie, decodeJWT, createToken } = require('../util/Auth');
-const { getUserCalendars } = require('../API/Google/Calendar/CalendarApi');
+const { getUserCalendars } = require('../API/Google/Calendar/calendarApi');
 
 const SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
@@ -43,7 +43,6 @@ const authCallback = async (req, res) => {
         const { data } = userInfo;
         const isVerified = await verifyUser(data.email);
         const calendars = await getUserCalendars(tokens.access_token);
-        console.log('calendars:', calendars);
 
         if (!isVerified) {
             await createUser({
@@ -55,7 +54,7 @@ const authCallback = async (req, res) => {
                 createdAt: new Date()
             });
         }
-        // save access token to jwt
+
         const jwtToken = createToken({ email: data.email, accessToken: tokens.access_token });
         console.log('accessToken:', tokens.access_token);
         console.log('jwtToken:', jwtToken);
