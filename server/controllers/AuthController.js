@@ -1,12 +1,14 @@
 const { google } = require('googleapis');
 const { oauth2Client } = require('../API/Google/Auth/Auth');
-const { createUser, getUserById, updateUserById, deleteUserById, } = require('../models/userModel');
+const { createUser } = require('../models/userModel');
 const { verifyUser, createCookie, decodeJWT, createToken } = require('../util/Auth');
+const { getUserCalendars } = require('../API/Google/Calendar/CalendarApi');
 
 const SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/calendar.calendarlist.readonly'
 ];
 
 const authenticateUser = async (req, res) => {
@@ -40,6 +42,8 @@ const authCallback = async (req, res) => {
         const userInfo = await oauth2.userinfo.get();
         const { data } = userInfo;
         const isVerified = await verifyUser(data.email);
+        const calendars = await getUserCalendars(tokens.access_token);
+        console.log('calendars:', calendars);
 
         if (!isVerified) {
             await createUser({
@@ -47,6 +51,7 @@ const authCallback = async (req, res) => {
                 last_name: data.family_name,
                 refreshToken: tokens.refresh_token,
                 email: data.email,
+                calendars: calendars,
                 createdAt: new Date()
             });
         }

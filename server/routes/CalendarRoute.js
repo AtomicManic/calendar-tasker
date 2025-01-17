@@ -1,7 +1,8 @@
-const { getTodayEvents } = require('../controllers/CalendarController');
+const { getCalendars, getEvents } = require('../controllers/CalendarController');
 const authenticateJWT = require('../middleware/jwt');
 const router = require('express').Router();
 
-router.get('/today', authenticateJWT, getTodayEvents);
+router.get('/events/:time/:calendarId', authenticateJWT, getEvents);
+router.get('/calendars', authenticateJWT, getCalendars);
 
 module.exports = router;
