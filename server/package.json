@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon --no-deprecation index.js"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +13,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "googleapis": "^144.0.0",
+    "mongoose": "^8.9.5",
     "whatwg-url": "^14.1.0"
   },
   "devDependencies": {
