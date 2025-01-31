@@ -9,9 +9,9 @@ const authenticateJWT = async (req, res, next) => {
     }
 
     let decoded;
-
     try {
         decoded = decodeJWT(token);
+        console.log('Decoded token:', decoded);
         req.user = decoded;
         return next();
     } catch (error) {
@@ -33,7 +33,7 @@ const authenticateJWT = async (req, res, next) => {
         oauth2Client.setCredentials({ refresh_token: user.refreshToken });
         const { credentials } = await oauth2Client.refreshAccessToken();
         const newAccessToken = credentials.access_token;
-        const newJwtToken = createToken({ email: userEmail, accessToken: newAccessToken });
+        const newJwtToken = createToken({ email: userEmail, accessToken: newAccessToken, googleId: user.googleId });
         createCookie(res, newJwtToken);
         req.user = decodeJWT(newJwtToken);
         return next();

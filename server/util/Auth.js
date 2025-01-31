@@ -10,6 +10,7 @@ const createToken = async (data) => {
         {
             email: data.email,
             accessToken: data.accessToken,
+            googleId: data.googleId
         },
         process.env.JWT_SECRET,
         { expiresIn: '1h' }

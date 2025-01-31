@@ -43,9 +43,10 @@ const authCallback = async (req, res) => {
         const { data } = userInfo;
         const isVerified = await verifyUser(data.email);
         const calendars = await getUserCalendars(tokens.access_token);
-
+        let newUser = null;
         if (!isVerified) {
-            await createUser({
+            newUser = await createUser({
+                googleId: data.id,
                 first_name: data.given_name,
                 last_name: data.family_name,
                 refreshToken: tokens.refresh_token,
@@ -53,9 +54,10 @@ const authCallback = async (req, res) => {
                 calendars: calendars,
                 createdAt: new Date()
             });
+            console.log('New user created:', newUser);
         }
 
-        const jwtToken = createToken({ email: data.email, accessToken: tokens.access_token });
+        const jwtToken = createToken({ email: data.email, accessToken: tokens.access_token, googleId: data.id });
         console.log('accessToken:', tokens.access_token);
         console.log('jwtToken:', jwtToken);
         createCookie(res, jwtToken);

@@ -7,6 +7,13 @@ const createUser = async (userData) => {
     return user;
 };
 
+const getUserByGoogleId = async (googleId) => {
+    const user = await User.findOne({
+        googleId
+    });
+    return user;
+}
+
 const getUserByEmail = async (email) => {
     const user = await User.findOne({
         email
@@ -44,4 +51,5 @@ module.exports = {
     getUserByEmail,
     updateUserById,
     deleteUserById,
+    getUserByGoogleId
 };

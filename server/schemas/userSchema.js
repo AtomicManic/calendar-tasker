@@ -1,3 +1,4 @@
+const { google } = require('googleapis');
 const { Schema, model } = require('mongoose');
 
 const userSchema = new Schema({
@@ -29,7 +30,11 @@ const userSchema = new Schema({
         required: true,
         type: Date,
         default: Date.now
-    }
+    },
+    googleId: {
+        type: String,
+        default: ''
+    },
 }, { collection: 'users' });
 
 const User = model('User', userSchema);
