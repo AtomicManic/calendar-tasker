@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const authenticateJWT = require("../middleware/jwt");
+const authenticateJWT = require("../middleware/auth");
 const {
   createNewTask,
   getTasks,

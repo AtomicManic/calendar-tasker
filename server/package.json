@@ -16,9 +16,11 @@
     "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
+    "uuid": "^11.0.5",
     "whatwg-url": "^14.1.0"
   },
   "devDependencies": {
+    "ngrok": "^5.0.0-beta.2",
     "nodemon": "^3.1.9"
   }
 }

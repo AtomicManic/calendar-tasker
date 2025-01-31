@@ -1,5 +1,5 @@
 const { getCalendars, getEvents, getEventById } = require('../controllers/calendarController');
-const authenticateJWT = require('../middleware/jwt');
+const authenticateJWT = require('../middleware/auth');
 const router = require('express').Router();
 
 router.get('/events/:time/:calendarId', authenticateJWT, getEvents);
