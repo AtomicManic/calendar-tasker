@@ -1,14 +1,17 @@
 const { google } = require('googleapis');
 const { oauth2Client } = require('../API/Google/Auth/auth');
 const { createUser } = require('../models/userModel');
-const { verifyUser, createCookie, decodeJWT, createToken } = require('../util/Auth');
+const { verifyUser, createCookie, decodeJWT, createToken, getUserPhoneNumber } = require('../util/Auth');
 const { getUserCalendars } = require('../API/Google/Calendar/calendarApi');
+const { admin } = require('../API/FCM/firebase');
+const { generateFCMToken } = require('../API/FCM/notificationService');
 
 const SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/calendar.calendarlist.readonly'
+    'https://www.googleapis.com/auth/calendar.calendarlist.readonly',
+    'https://www.googleapis.com/auth/user.phonenumbers.read'
 ];
 
 const authenticateUser = async (req, res) => {
@@ -41,8 +44,12 @@ const authCallback = async (req, res) => {
 
         const userInfo = await oauth2.userinfo.get();
         const { data } = userInfo;
+
         const isVerified = await verifyUser(data.email);
         const calendars = await getUserCalendars(tokens.access_token);
+        const phoneNumber = await getUserPhoneNumber(tokens.access_token);
+        const fcmToken = await generateFCMToken(data.id);
+
         let newUser = null;
         if (!isVerified) {
             newUser = await createUser({
@@ -51,6 +58,8 @@ const authCallback = async (req, res) => {
                 last_name: data.family_name,
                 refreshToken: tokens.refresh_token,
                 email: data.email,
+                phoneNumber,
+                fcmToken,
                 calendars: calendars,
                 createdAt: new Date()
             });

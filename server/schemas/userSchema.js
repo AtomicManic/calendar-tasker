@@ -18,6 +18,10 @@ const userSchema = new Schema({
         unique: true,
         trim: true
     },
+    phoneNumber: {
+        type: String,
+        default: ''
+    },
     calendars: {
         type: Array,
         default: []
@@ -35,6 +39,10 @@ const userSchema = new Schema({
         type: String,
         default: ''
     },
+    fcmToken: {
+        type: String,
+        default: ''
+    }
 }, { collection: 'users' });
 
 const User = model('User', userSchema);

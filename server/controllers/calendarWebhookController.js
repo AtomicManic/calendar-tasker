@@ -3,6 +3,7 @@ const uuid = require('uuid');
 const User = require('../models/userModel');
 const WatchChannel = require('../schemas/watchChannelSchema');
 const { oauth2Client } = require('../API/Google/Auth/auth');
+const { sendPushNotification } = require('../API/FCM/notificationService');
 
 const handleWebhook = async (req, res) => {
     const { headers } = req;
@@ -20,7 +21,6 @@ const handleWebhook = async (req, res) => {
         console.error(`❌ Watch entry not found for channel ${channelId}`);
         return res.status(404).send();
     }
-    console.log(`🔔 from watch entry id: ${watchEntry.channelId}, from header: ${channelId}`);
 
     const { calendarId } = watchEntry;
 
@@ -72,7 +72,7 @@ const setupWatchForUser = async (userId, calendarId, oauth2Client, summary) => {
                 type: 'web_hook',
                 address: `${process.env.WEBHOOK_URL}/webhook/calendar`,
                 token: userId,
-                
+
             }
         });
 
@@ -121,7 +121,8 @@ const setupWatchForAllCalendars = async (req, res) => {
 };
 
 const processCalendarUpdates = async (userId, events) => {
-    console.log(`Processing ${events.length} events for user ${userId}`);
+    const body = `Your event: ${events[0].summary} has been updated.`;
+    sendPushNotification(userId, { title: 'update', body });
 };
 
 

@@ -45,4 +45,23 @@ const decodeJWT = (token) => {
     return decoded;
 }
 
-module.exports = { storeRefreshToken, storeAccessToken, createToken, verifyUser, createCookie, decodeJWT };
+const getUserPhoneNumber = async (accessToken) => {
+    try {
+        const response = await fetch('https://people.googleapis.com/v1/people/me?personFields=phoneNumbers', {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        console.log('Phone number response:', response);
+        const data = await response.json();
+
+        if (data.phoneNumbers && data.phoneNumbers.length > 0) {
+            return data.phoneNumbers[0].value;
+        } else {
+            return "No phone number found";
+        }
+    } catch (error) {
+        console.error("Error fetching phone number:", error);
+        return null;
+    }
+};
+
+module.exports = { storeRefreshToken, storeAccessToken, createToken, verifyUser, createCookie, decodeJWT, getUserPhoneNumber };
