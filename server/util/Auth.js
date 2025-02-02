@@ -1,3 +1,4 @@
+const { domains } = require('googleapis/build/src/apis/domains');
 const { getUserByEmail } = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 
@@ -6,7 +7,7 @@ const storeRefreshToken = async (userId, refreshToken) => { }
 const storeAccessToken = async (userId, accessToken) => { }
 
 const createToken = async (data) => {
-    const jwtToken = jwt.sign(
+    const jwtToken = await jwt.sign(
         {
             email: data.email,
             accessToken: data.accessToken,
@@ -22,8 +23,10 @@ const createToken = async (data) => {
 const createCookie = async (res, token) => {
     res.cookie('auth', token, {
         httpOnly: true,
-        sameSite: 'none',
+        secure: process.env.NODE_ENV === 'production',
         maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
+        path: '/',
+        domain: 'localhost'
     });
 }
 

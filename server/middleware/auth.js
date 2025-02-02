@@ -4,6 +4,7 @@ const { google } = require('googleapis');
 
 const authenticateJWT = async (req, res, next) => {
     const token = req.cookies.auth;
+    console.log('authToken: ', req.cookies.auth);
     if (!token) {
         return res.status(401).send('Access denied!');
     }

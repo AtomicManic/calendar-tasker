@@ -8,8 +8,7 @@ const CalendarRouter = require('./routes/calendarRoute');
 const TaskRouter = require('./routes/taskRoute');
 const webhookRoutes = require('./routes/calendarWebhookRoute');
 const { cleanupWatchers, shutdown } = require('./util/webhookWatcher');
-const WatchChannel = require('./schemas/watchChannelSchema');
-const { google } = require('googleapis');
+const { corsConfig } = require('./config/cors');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -17,7 +16,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors());
+app.use(cors(corsConfig));
 
 connectDB();
 

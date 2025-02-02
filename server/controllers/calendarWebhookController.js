@@ -3,7 +3,6 @@ const uuid = require('uuid');
 const User = require('../models/userModel');
 const WatchChannel = require('../schemas/watchChannelSchema');
 const { oauth2Client } = require('../API/Google/Auth/auth');
-const { sendPushNotification } = require('../API/FCM/notificationService');
 
 const handleWebhook = async (req, res) => {
     const { headers } = req;
@@ -121,8 +120,7 @@ const setupWatchForAllCalendars = async (req, res) => {
 };
 
 const processCalendarUpdates = async (userId, events) => {
-    const body = `Your event: ${events[0].summary} has been updated.`;
-    sendPushNotification(userId, { title: 'update', body });
+    console.log('Processing updates for user:', userId);
 };
 
 

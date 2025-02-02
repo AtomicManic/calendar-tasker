@@ -3,8 +3,6 @@ const { oauth2Client } = require('../API/Google/Auth/auth');
 const { createUser } = require('../models/userModel');
 const { verifyUser, createCookie, decodeJWT, createToken, getUserPhoneNumber } = require('../util/Auth');
 const { getUserCalendars } = require('../API/Google/Calendar/calendarApi');
-const { admin } = require('../API/FCM/firebase');
-const { generateFCMToken } = require('../API/FCM/notificationService');
 
 const SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
@@ -22,7 +20,7 @@ const authenticateUser = async (req, res) => {
             prompt: 'consent', // Force consent screen to ensure refresh token
             include_granted_scopes: true // Enable incremental authorization
         });
-        res.send(`<a href="${authUrl}">Authenticate with Google</a>`);
+        res.send({ authUrl });
         console.log(`Visit this URL to authenticate: ${authUrl}`);
     } catch (error) {
         console.error('Authentication URL generation failed:', error);
@@ -31,6 +29,7 @@ const authenticateUser = async (req, res) => {
 }
 
 const authCallback = async (req, res) => {
+    console.log('Auth callback hit');
     const { code } = req.query;
 
     try {
@@ -48,7 +47,6 @@ const authCallback = async (req, res) => {
         const isVerified = await verifyUser(data.email);
         const calendars = await getUserCalendars(tokens.access_token);
         const phoneNumber = await getUserPhoneNumber(tokens.access_token);
-        const fcmToken = await generateFCMToken(data.id);
 
         let newUser = null;
         if (!isVerified) {
@@ -59,24 +57,24 @@ const authCallback = async (req, res) => {
                 refreshToken: tokens.refresh_token,
                 email: data.email,
                 phoneNumber,
-                fcmToken,
                 calendars: calendars,
                 createdAt: new Date()
             });
-            console.log('New user created:', newUser);
+            console.log();
         }
 
-        const jwtToken = createToken({ email: data.email, accessToken: tokens.access_token, googleId: data.id });
+        const jwtToken = await createToken({ email: data.email, accessToken: tokens.access_token, googleId: data.id });
         console.log('accessToken:', tokens.access_token);
         console.log('jwtToken:', jwtToken);
         createCookie(res, jwtToken);
 
-        res.send('Authentication successful! You can close this tab.');
+        res.redirect('http://localhost:5173/auth-success');
 
     } catch (error) {
         console.error('Error during authentication:', error);
-        res.status(500).send('Authentication failed!');
+        res.redirect('http://localhost:5173/login');
     }
 }
+
 
 module.exports = { authenticateUser, authCallback };
