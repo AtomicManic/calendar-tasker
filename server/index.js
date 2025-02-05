@@ -9,6 +9,7 @@ const TaskRouter = require('./routes/taskRoute');
 const webhookRoutes = require('./routes/calendarWebhookRoute');
 const { cleanupWatchers, shutdown } = require('./util/webhookWatcher');
 const { corsConfig } = require('./config/cors');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -24,6 +25,8 @@ app.use('/auth', AuthRouter);
 app.use('/calendar', CalendarRouter);
 app.use('/task', TaskRouter);
 app.use('/webhook', webhookRoutes);
+
+app.use(errorHandler);
 
 cleanupWatchers();
 

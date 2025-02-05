@@ -4,49 +4,48 @@ const {
   fetchEventById,
 } = require("../API/Google/Calendar/calendarApi");
 const { google } = require("googleapis");
+const ServerUnableError = require("../errors/internalErrors");
+const { EntityNotFound, PropertyNotFound } = require("../errors/notFoundErrors");
 
 const getEvents = async (req, res) => {
+  const { accessToken } = req.user;
   const { time, calendarId } = req.params;
-  try {
-    const { accessToken } = req.user;
-    const events = await fetchPublicEvents(accessToken, time, calendarId);
-    res.status(200).send(events);
-  } catch (error) {
-    console.error("Error fetching events:", error);
-    res.status(500).send("Error fetching events");
-  }
+  if (!time) throw new PropertyNotFound("time");
+  if (!calendarId) throw new PropertyNotFound("calendarId");
+
+  const events = await fetchPublicEvents(accessToken, time, calendarId);
+  if (!events) throw new EntityNotFound("Events");
+
+  res.status(200).json(events);
 };
 
 const getEventById = async (req, res) => {
+  const { accessToken } = req.user;
   const { eventId, calendarId } = req.params;
-  try {
-    const { accessToken } = req.user;
-    const event = await fetchEventById(accessToken, eventId, calendarId);
-    res.status(200).send(event);
-  } catch (error) {
-    console.error("Error fetching event:", error);
-    res.status(500).send("Error fetching event");
-  }
+  if (!eventId) throw new PropertyNotFound("event Id");
+  if (!calendarId) throw new PropertyNotFound("calendar Id");
+
+  const event = await fetchEventById(accessToken, eventId, calendarId);
+  if (!event) throw new EntityNotFound("Event");
+
+  res.status(200).json(event);
 };
 
 const getCalendars = async (req, res) => {
-  try {
-    const { accessToken } = req.user;
-    const calendars = await getUserCalendars(accessToken);
-    console.log('calendars', calendars);
-    let calendarsData = [];
-    calendars.forEach((calendar) => {
-      calendarsData.push({
-        id: calendar.id,
-        name: calendar.summary,
-        color: calendar.backgroundColor,
-      });
+  const { accessToken } = req.user;
+  const calendars = await getUserCalendars(accessToken);
+  if (!calendars) throw new EntityNotFound("Calendars");
+
+  let calendarsData = [];
+  calendars.forEach((calendar) => {
+    calendarsData.push({
+      id: calendar.id,
+      name: calendar.summary,
+      color: calendar.backgroundColor,
     });
-    res.status(200).send(calendarsData);
-  } catch (error) {
-    console.error("Error fetching calendars:", error);
-    res.status(500).send("Error fetching calendars");
-  }
+  });
+
+  res.status(200).json(calendarsData);
 };
 
 module.exports = { getEvents, getCalendars, getEventById };

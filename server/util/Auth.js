@@ -34,7 +34,6 @@ const verifyUser = async (email) => {
     try {
         const user = await getUserByEmail(email);
         if (!user) {
-            console.log('here')
             return false;
         }
         return user;
@@ -53,7 +52,6 @@ const getUserPhoneNumber = async (accessToken) => {
         const response = await fetch('https://people.googleapis.com/v1/people/me?personFields=phoneNumbers', {
             headers: { Authorization: `Bearer ${accessToken}` }
         });
-        console.log('Phone number response:', response);
         const data = await response.json();
 
         if (data.phoneNumbers && data.phoneNumbers.length > 0) {
