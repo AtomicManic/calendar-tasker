@@ -6,7 +6,6 @@ const { oauth2Client } = require('../API/Google/Auth/auth');
 
 const handleWebhook = async (req, res) => {
     const { headers } = req;
-
     if (headers['x-goog-resource-state'] !== 'exists') res.status(200).send('No updates');
 
     const channelId = headers['x-goog-channel-id'];
@@ -36,12 +35,13 @@ const handleWebhook = async (req, res) => {
     try {
         const events = await calendar.events.list({
             calendarId,
-            updatedMin: new Date(Date.now() - 5 * 60000).toISOString(),
+            updatedMin: watchEntry.lastSyncTime.toISOString(),
             singleEvents: true,
-            orderBy: 'startTime'
+            orderBy: 'startTime',
+            showDeleted: true,
         });
         console.log('Updated events:', events.data.items);
-
+        await updateLastSyncTime(channelId);
         await processCalendarUpdates(googleId, events.data.items);
         res.status(200).send();
     } catch (error) {
@@ -52,6 +52,11 @@ const handleWebhook = async (req, res) => {
 };
 
 const setupWatchForUser = async (userId, calendarId, oauth2Client, summary) => {
+    if (calendarId.includes('holiday@group.v.calendar.google.com')) {
+        console.log(`Skipping holiday calendar: ${calendarId}`);
+        return null;
+    }
+    
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
     // 🛑 Check if there's an existing watch before creating a new one
@@ -84,6 +89,7 @@ const setupWatchForUser = async (userId, calendarId, oauth2Client, summary) => {
             resourceId: response.data.resourceId,
             expiration: new Date(Number(response.data.expiration)),
             summary,
+            lastSyncTime: new Date(),
         });
         console.log(`✅ New watch created for calendar ${calendarId}`);
         return response.data;
@@ -122,6 +128,14 @@ const setupWatchForAllCalendars = async (req, res) => {
 const processCalendarUpdates = async (userId, events) => {
     console.log('Processing updates for user:', userId);
 };
+
+const updateLastSyncTime = async (channelId) => {
+    try {
+        WatchChannel.updateOne({ channelId }, { lastSyncTime: new Date() });
+    } catch (error) {
+        console.error('Error updating last sync time:', error);
+    }
+}
 
 
 module.exports = {

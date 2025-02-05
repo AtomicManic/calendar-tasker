@@ -7,6 +7,7 @@ const watchChannelSchema = new mongoose.Schema({
     resourceId: String,
     expiration: Date,
     summary: String,
+    lastSyncTime: { type: Date, default: Date.now },
     createdAt: {
         type: Date,
         default: Date.now

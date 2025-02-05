@@ -33,6 +33,7 @@ const getCalendars = async (req, res) => {
   try {
     const { accessToken } = req.user;
     const calendars = await getUserCalendars(accessToken);
+    console.log('calendars', calendars);
     let calendarsData = [];
     calendars.forEach((calendar) => {
       calendarsData.push({

@@ -3,7 +3,7 @@ const authenticateJWT = require('../middleware/auth');
 const router = require('express').Router();
 
 router.get('/events/:time/:calendarId', authenticateJWT, getEvents);
-router.get('/calendars', authenticateJWT, getCalendars);
+router.get('/', authenticateJWT, getCalendars);
 router.get('/events/:eventId/:calendarId', authenticateJWT, getEventById);
 
 module.exports = router;
