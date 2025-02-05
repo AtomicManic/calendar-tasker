@@ -20,6 +20,8 @@ Thumbs.db
 .idea/
 *.swp
 
+test.js
+
 config/
 
 
