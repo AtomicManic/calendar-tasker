@@ -13,6 +13,7 @@ const fetchEventById = async (accessToken, eventId, calendarId) => {
 }
 
 const fetchPublicEvents = async (accessToken, timeRange, calendarId, timeZone) => {
+    if (timeRange === ':time') throw new PropertyNotFound('time range');
     const calendar = initCalendarClient(accessToken);
     const timeConstraints = getTimeRange(timeRange, timeZone);
 
@@ -41,33 +42,25 @@ const fetchPublicEvents = async (accessToken, timeRange, calendarId, timeZone) =
 
     } while (nextPageToken); // Continue until all pages are fetched
 
-    if (allEvents.length) {
-        console.log(`${timeRange}'s events:`);
-        allEvents.forEach((event) => {
-            const start = event.start.dateTime || event.start.date;
-            console.log(`${start} - ${event.summary}`);
-        });
-    } else {
-        console.log('No upcoming events found.');
-    }
+    if (allEvents.length) logEventsSummary(allEvents);
 
     return allEvents;
 };
 
 const getUserCalendars = async (accessToken) => {
-    try {
         const calendar = initCalendarClient(accessToken);
         const response = await calendar.calendarList.list();
-        const calendars = response.data.items;
-        return calendars;
-    } catch (error) {
-        console.error('Error fetching calendars:', error);
-        res.status(500).send('Error fetching calendars');
-    }
+        if(!response) throw new ServerUnableError('get calendars');
+        return response.data.items;
 }
 
 
 // Helper function to get time range for events
-
+const logEventsSummary = (events) => {
+    events.forEach((event) => {
+        const start = event.start.dateTime || event.start.date;
+        console.log(`${start} - ${event.summary}`);
+    });
+}
 
 module.exports = { fetchPublicEvents, getUserCalendars, fetchEventById };

@@ -117,7 +117,7 @@ const setupWatchForAllCalendars = async (req, res) => {
                 successfulWatches.push(result);
             }
         }
-
+        
         res.json(successfulWatches.length > 0 ? { successfulWatches } : { error: 'No watches were setup' });
     } catch (error) {
         console.error('Error setting up calendar watches:', error);
