@@ -1,46 +1,58 @@
 const initCalendarClient = require('./calendarClient');
+const { getTimeRange } = require('../../../util/timeZoneOffset');
+const { PropertyNotFound } = require('../../../errors/notFoundErrors');
+const { ServerUnableError } = require('../../../errors/internalErrors');
 
 const fetchEventById = async (accessToken, eventId, calendarId) => {
     const calendar = initCalendarClient(accessToken);
     const response = await calendar.events.get({
-        calendarId: calendarId ? calendarId : 'primary',
-        eventId: eventId
+        calendarId: calendarId || 'primary',
+        eventId
     });
+    return response.data;
 }
 
-const fetchPublicEvents = async (accessToken, timeRange, calendarId) => {
-    try {
-        const calendar = initCalendarClient(accessToken);
+const fetchPublicEvents = async (accessToken, timeRange, calendarId, timeZone) => {
+    const calendar = initCalendarClient(accessToken);
+    const timeConstraints = getTimeRange(timeRange, timeZone);
 
-        const timeConstraints = getTimeRange(timeRange);
+    let allEvents = [];
+    let nextPageToken = null;
+    if (calendarId === ':calendarId') throw new PropertyNotFound('calendar id')
 
+    do {
         const response = await calendar.events.list({
-            calendarId: calendarId ? calendarId : 'primary', // For authenticated access, this would be the user's calendar
+            calendarId: calendarId,
             timeMin: timeConstraints.timeMin,
             timeMax: timeConstraints.timeMax,
-            maxResults: 10,
+            maxResults: 10,  // Fetch 50 events per request
             singleEvents: true,
             orderBy: 'startTime',
+            pageToken: nextPageToken // Get next page if available
         });
 
-        const events = response.data.items;
+        if (!response.data.items) throw new ServerUnableError('get events')
 
-        if (events.length) {
-            console.log('Upcoming events:');
-            events.forEach((event) => {
-                const start = event.start.dateTime || event.start.date;
-                console.log(`${start} - ${event.summary}`);
-            });
-            return events || [];
-        } else {
-            console.log('No upcoming events found.');
+        if (response.data.items && response.data.items.length > 0) {
+            allEvents = allEvents.concat(response.data.items); // Append new results
         }
 
-        return events;
-    } catch (error) {
-        console.error('Error fetching events:', error);
+        nextPageToken = response.data.nextPageToken || null; // Update token for next call
+
+    } while (nextPageToken); // Continue until all pages are fetched
+
+    if (allEvents.length) {
+        console.log(`${timeRange}'s events:`);
+        allEvents.forEach((event) => {
+            const start = event.start.dateTime || event.start.date;
+            console.log(`${start} - ${event.summary}`);
+        });
+    } else {
+        console.log('No upcoming events found.');
     }
-}
+
+    return allEvents;
+};
 
 const getUserCalendars = async (accessToken) => {
     try {
@@ -56,41 +68,6 @@ const getUserCalendars = async (accessToken) => {
 
 
 // Helper function to get time range for events
-const getTimeRange = (timeRange) => {
-    const now = new Date();
-    const timeMin = new Date();
-    const timeMax = new Date();
 
-    switch (timeRange) {
-        case 'today':
-            timeMin.setHours(0, 0, 0, 0);
-            timeMax.setHours(23, 59, 59, 999);
-            break;
-        case 'tomorrow':
-            timeMin.setDate(now.getDate() + 1);
-            timeMin.setHours(0, 0, 0, 0);
-            timeMax.setDate(now.getDate() + 1);
-            timeMax.setHours(23, 59, 59, 999);
-            break;
-        case 'week':
-            timeMin.setHours(0, 0, 0, 0);
-            timeMax.setDate(now.getDate() + 7);
-            timeMax.setHours(23, 59, 59, 999);
-            break;
-        case 'month':
-            timeMin.setHours(0, 0, 0, 0);
-            timeMax.setMonth(now.getMonth() + 1);
-            timeMax.setHours(23, 59, 59, 999);
-            break;
-        default:
-            timeMin.setHours(0, 0, 0, 0);
-            timeMax.setHours(23, 59, 59, 999);
-    }
-
-    return {
-        timeMin: timeMin.toISOString(),
-        timeMax: timeMax.toISOString()
-    };
-};
 
 module.exports = { fetchPublicEvents, getUserCalendars, fetchEventById };

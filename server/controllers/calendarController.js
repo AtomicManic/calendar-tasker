@@ -6,14 +6,16 @@ const {
 const { google } = require("googleapis");
 const ServerUnableError = require("../errors/internalErrors");
 const { EntityNotFound, PropertyNotFound } = require("../errors/notFoundErrors");
+const { getTimeZone } = require("../util/timeZoneOffset");
 
 const getEvents = async (req, res) => {
   const { accessToken } = req.user;
   const { time, calendarId } = req.params;
+  const timeZone = getTimeZone(req);
   if (!time) throw new PropertyNotFound("time");
   if (!calendarId) throw new PropertyNotFound("calendarId");
-
-  const events = await fetchPublicEvents(accessToken, time, calendarId);
+  
+  const events = await fetchPublicEvents(accessToken, time, calendarId, timeZone);
   if (!events) throw new EntityNotFound("Events");
 
   res.status(200).json(events);

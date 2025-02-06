@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('express-async-errors');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -34,5 +35,5 @@ process.on('SIGINT', shutdown);  // CTRL + C
 process.on('SIGTERM', shutdown); // Termination signal (e.g., Docker, PM2)
 
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`🚀 Server is running on http://localhost:${port}`);
 });

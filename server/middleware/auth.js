@@ -1,7 +1,7 @@
 const { decodeJWT, createToken } = require('../util/Auth');
 const { getUserByEmail } = require('../models/userModel');
 const { google } = require('googleapis');
-const { UnauthorizedError } = require('../errors/authErros');
+const { UnauthorizedError } = require('../errors/authErrors');
 
 const authenticateJWT = async (req, res, next) => {
     const token = req.cookies.auth;

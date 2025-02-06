@@ -3,7 +3,7 @@ const { oauth2Client } = require('../API/Google/Auth/auth');
 const { createUser } = require('../models/userModel');
 const { verifyUser, createCookie, createToken, getUserPhoneNumber } = require('../util/Auth');
 const { getUserCalendars } = require('../API/Google/Calendar/calendarApi');
-const UnauthorizedError = require('../errors/authErros');
+const UnauthorizedError = require('../errors/authErrors');
 const ServerUnableError = require('../errors/internalErrors');
 
 const SCOPES = [

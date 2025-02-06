@@ -1,6 +1,7 @@
 const logger = require("../log/errorLogger");
+const {UnauthorizedError} = require("../errors/authErrors");
 
-const errorHandler = (error, req, res) => {
+const errorHandler = (error, req, res, next) => {
   try {
     logger.error(error.message);
   } catch {
@@ -14,6 +15,7 @@ const errorHandler = (error, req, res) => {
 
   res.status(error.status || 500);
   res.json({ message: error.message || "Internal Server Error" });
+
 };
 
 module.exports = errorHandler;

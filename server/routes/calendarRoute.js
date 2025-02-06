@@ -2,8 +2,8 @@ const { getCalendars, getEvents, getEventById } = require('../controllers/calend
 const authenticateJWT = require('../middleware/auth');
 const router = require('express').Router();
 
-router.get('/events/:time/:calendarId', authenticateJWT, getEvents);
 router.get('/', authenticateJWT, getCalendars);
+router.get('/events/:time(today|tomorrow|week-s|week-m|month|custom)/:calendarId', authenticateJWT, getEvents);
 router.get('/events/:eventId/:calendarId', authenticateJWT, getEventById);
 
 module.exports = router;
