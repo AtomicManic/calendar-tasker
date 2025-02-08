@@ -46,6 +46,9 @@ const getTimeRange = (timeRange, timeZone) => {
             timeMax.setMonth(now.getMonth() + 1, 0); // Set to last day of current month
             timeMax.setHours(23, 59, 59, 999);
             break;
+        case 'all':
+            timeMin.setFullYear(1970, 0, 1); // Start of Unix Epoch
+            timeMax.setFullYear(2038, 0, 19); // End of Unix Epoch
         default:
             timeMin.setHours(0, 0, 0, 0);
             timeMax.setHours(23, 59, 59, 999);

@@ -2,9 +2,10 @@ const { google } = require('googleapis');
 const { oauth2Client } = require('../API/Google/Auth/auth');
 const { createUser } = require('../models/userModel');
 const { verifyUser, createCookie, createToken, getUserPhoneNumber } = require('../util/Auth');
-const { getUserCalendars } = require('../API/Google/Calendar/calendarApi');
+const { getUserCalendars, fetchPublicEvents } = require('../API/Google/Calendar/calendarApi');
 const UnauthorizedError = require('../errors/authErrors');
 const ServerUnableError = require('../errors/internalErrors');
+const { calendar } = require('googleapis/build/src/apis/calendar');
 
 const SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
@@ -56,10 +57,27 @@ const authCallback = async (req, res) => {
             refreshToken: tokens.refresh_token,
             email: data.email,
             phoneNumber,
-            calendars: calendars,
             createdAt: new Date()
         });
         if (!newUser) throw new ServerUnableError('create user');
+
+        Calendar.bulkWrite(calendars.map(cal => ({
+            insertOne: {
+                document: {
+                    userId: newUser._id,
+                    id: cal.id,
+                    kind: cal.kind,
+                    etag: cal.etag,
+                    id: cal.id,
+                    summary: cal.summary,
+                    timeZone: cal.timeZone,
+                    color: cal.backgroundColor,
+                    forgroundColor: cal.foregroundColor,
+                    backgroundColor: cal.backgroundColor,
+                    accessRole: cal.accessRole,
+                }
+            }
+        })));
     }
 
     const jwtToken = await createToken({ email: data.email, accessToken: tokens.access_token, googleId: data.id });

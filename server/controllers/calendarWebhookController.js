@@ -4,7 +4,7 @@ const User = require('../models/userModel');
 const WatchChannel = require('../schemas/watchChannelSchema');
 const Watch = require('../models/webhookModel');
 const { oauth2Client } = require('../API/Google/Auth/auth');
-const { processCalendarUpdates } = require('../util/diffHandler');
+const { processCalendarUpdates, processEventUpdates } = require('../util/diffHandler');
 
 const handleWebhook = async (req, res) => {
     const { headers } = req;
@@ -44,7 +44,7 @@ const handleWebhook = async (req, res) => {
         });
         console.log('Updated events:', events.data.items);
         await updateLastSyncTime(channelId);
-        await processCalendarUpdates(googleId, events.data.items);
+        await processEventUpdates(calendarId, events.data.items);
         res.status(200).send();
     } catch (error) {
         console.error('Error processing webhook:', error);
