@@ -4,6 +4,7 @@ const User = require('../models/userModel');
 const WatchChannel = require('../schemas/watchChannelSchema');
 const Watch = require('../models/webhookModel');
 const { oauth2Client } = require('../API/Google/Auth/auth');
+const { processCalendarUpdates } = require('../util/diffHandler');
 
 const handleWebhook = async (req, res) => {
     const { headers } = req;
@@ -15,7 +16,6 @@ const handleWebhook = async (req, res) => {
 
     console.log(`🔔 Webhook received for channel ${channelId}, resource ${resourceId}, user ${googleId}`);
 
-    // const watchEntry = await WatchChannel.findOne({ channelId });
     const watchEntry = await Watch.findWatcherByChannelId(channelId);
     if (!watchEntry) {
         console.error(`❌ Watch entry not found for channel ${channelId} reasource ${resourceId}`);
@@ -81,9 +81,10 @@ const handleCalendarListWebhook = async (req, res) => {
 
     try {
         const calendars = await calendar.calendarList.list();
-        console.log('Updated calendars:', calendars.data.items);
         await updateLastSyncTime(channelId);
-        res.status(200).send();
+
+        const updates = await processCalendarUpdates(user._id, calendars.data.items);
+        res.status(200).json(updates);
     } catch (error) {
         console.error('Error processing calendar list webhook:', error);
         res.status(500).send();
@@ -208,13 +209,8 @@ const watchCalendarList = async (userId, oauth2Client) => {
     }
 };
 
-const processCalendarUpdates = async (userId, events) => {
-    console.log('Processing updates for user:', userId);
-};
-
 const updateLastSyncTime = async (channelId) => {
     try {
-        // WatchChannel.updateOne({ channelId }, { lastSyncTime: new Date() });
         Watch.updateLastSyncTime(channelId);
     } catch (error) {
         console.error('Error updating last sync time:', error);
